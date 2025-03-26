@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
-
+#kupaaaaa
 # Parametry układu
 #DODAC MOZLIWOSC ZMIANY Z JAKIEGOS MENU
 R = float(input("Podaj wartosc rezystancji: "))
