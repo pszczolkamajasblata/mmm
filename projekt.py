@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 import tkinter as tk
 from tkinter import ttk
 
-# --- Sygnały wejściowe ---
+#sygnały wejściowe
 def input_rectangular(t, amplitude):
     return amplitude if (t % 2.0) < 1.0 else 0.0
 
@@ -15,7 +15,7 @@ def input_triangular(t, amplitude):
 def input_sinus(t, amplitude):
     return amplitude * np.sin(2 * np.pi * t)
 
-# --- Równania układu ---
+#równania układu 
 def motor_dynamics(t, x, u_func, R, L, K_e, K_t, J, k):
     i, theta, omega = x
     u = u_func(t)
@@ -24,7 +24,7 @@ def motor_dynamics(t, x, u_func, R, L, K_e, K_t, J, k):
     domega_dt = (K_t * i - k * theta) / J
     return [di_dt, dtheta_dt, domega_dt]
 
-# --- Symulacja i wykresy ---
+#symulacja i wykresy
 def simulate_and_plot(R, L, K_t, K_e, J, k, A, signal_type):
     if signal_type == 'prostokat':
         u_func = lambda t: input_rectangular(t, A)
@@ -64,7 +64,7 @@ def simulate_and_plot(R, L, K_t, K_e, J, k, A, signal_type):
     plt.tight_layout()
     plt.show()
 
-# --- GUI tkinter ---
+#GUI
 def start_simulation():
     R = float(entry_R.get())
     L = float(entry_L.get())
