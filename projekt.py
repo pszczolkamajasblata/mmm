@@ -41,7 +41,11 @@ def simulate_and_plot(R, L, K_t, K_e, J, k, A, signal_type, period, t_end):
     for t in t_values:
         u = input_func(t, A, period)
         dx = motor_dynamics(t, x, u, R, L, K_e, K_t, J, k)
-        x = [x[j] + dx[j] * dt for j in range(3)]
+        
+        i = x[0] + dx[0] * dt
+        theta = x[1] + dx[1] * dt
+        omega = x[2] + dx[2] * dt
+        x = [i, theta, omega]
 
         i_vals.append(x[0])
         theta_vals.append(x[1])
