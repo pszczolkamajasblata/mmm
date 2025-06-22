@@ -28,10 +28,10 @@ def parse_inputs():
 
 def update(_):
     vals = parse_inputs()
-    if vals is None or any(x <= 0 for x in vals[:-1]):
+    if vals is None or any(x == 0 for x in vals[:-1]):
         for ax in axs:
             ax.clear()
-            ax.text(0.5, 0.5, 'Błędne dane - zero w mianowniku', ha='center', va='center', color='red', fontsize=12)
+            ax.text(0.5, 0.5, 'Błędne dane', ha='center', va='center', color='red', fontsize=12)
             ax.set_xticks([])
             ax.set_yticks([])
         fig.canvas.draw_idle()
