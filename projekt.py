@@ -1,128 +1,105 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import tkinter as tk
-from tkinter import ttk
+from matplotlib.widgets import TextBox, RadioButtons
 from scipy.signal import sawtooth
 
-#sygnały wejściowe
-def input_rectangular_func(t, amplitude, period):
-    return amplitude if (t % period) < (period / 2) else 0.0
 
-def input_triangular_func(t, amplitude, period):
-    return amplitude * (sawtooth(2 * np.pi * t / period, width=0.5) + 1) / 2
+def input_rectangular(t, A, period):
+    return A if (t % period) < (period / 2) else 0.0
 
-def input_sinus_func(t, amplitude, period):
-    return amplitude * np.sin(2 * np.pi * t / period)
+def input_triangular(t, A, period):
+    return A * (sawtooth(2 * np.pi * t / period, width=0.5) + 1) / 2
 
-#równania układu
-def motor_dynamics(t, x, u, R, L, K_e, K_t, J, k):
+def input_sinus(t, A, period):
+    return A * np.sin(2 * np.pi * t / period)
+
+def motor_dynamics(t, x, u, R, L, Ke, Kt, J, k):
     i, theta, omega = x
-    di_dt = (u - R * i - K_e * omega) / L
+    di_dt = (u - R * i - Ke * omega) / L
     dtheta_dt = omega
-    domega_dt = (K_t * i - k * theta) / J
+    domega_dt = (Kt * i - k * theta) / J
     return [di_dt, dtheta_dt, domega_dt]
 
-#symulacja - metoda eulera
-def simulate_and_plot(R, L, K_t, K_e, J, k, A, signal_type, period, t_end):
-    if signal_type == 'prostokat':
-        input_func = input_rectangular_func
-    elif signal_type == 'trojkat':
-        input_func = input_triangular_func
-    else:
-        input_func = input_sinus_func
+def parse_inputs():
+    try:
+        return [float(tb.text) for tb in textboxes]
+    except ValueError:
+        return None
 
-    t_start, dt = 0.0, 0.001
-    t_values = np.arange(t_start, t_end + dt, dt)
+def update(_):
+    vals = parse_inputs()
+    if vals is None or any(x <= 0 for x in vals[:-1]):
+        for ax in axs:
+            ax.clear()
+            ax.text(0.5, 0.5, 'Błędne dane - zero w mianowniku', ha='center', va='center', color='red', fontsize=12)
+            ax.set_xticks([])
+            ax.set_yticks([])
+        fig.canvas.draw_idle()
+        return
 
-    #inicjalizacja zmiennych
-    x = [0.0, 0.0, 0.0]  #[i, theta, omega]
+    R, L, Kt, Ke, J, k, A, period, t_end = vals
+    signal = radio.value_selected
+    input_func = {
+        'prostokat': input_rectangular,
+        'trojkat': input_triangular,
+        'sinus': input_sinus
+    }[signal]
+
+    dt = 0.001
+    t = np.arange(0, t_end, dt)
     i_vals, theta_vals, omega_vals, u_vals = [], [], [], []
+    x = [0.0, 0.0, 0.0] # [i, theta, omega]
 
-    for t in t_values:
-        u = input_func(t, A, period)
-        dx = motor_dynamics(t, x, u, R, L, K_e, K_t, J, k)
-        
-        i = x[0] + dx[0] * dt
-        theta = x[1] + dx[1] * dt
-        omega = x[2] + dx[2] * dt
-        x = [i, theta, omega]
-
+    for ti in t:
+        u = input_func(ti, A, period)
+        dx = motor_dynamics(ti, x, u, R, L, Ke, Kt, J, k)
+        x = [x[j] + dx[j] * dt for j in range(3)]
         i_vals.append(x[0])
         theta_vals.append(x[1])
         omega_vals.append(x[2])
         u_vals.append(u)
 
+    axs[0].clear()
+    axs[0].plot(t, u_vals, color='magenta')
+    axs[0].set_title("Napięcie u(t)")
 
-    plt.figure(figsize=(12, 8))
+    axs[1].clear()
+    axs[1].plot(t, i_vals, color='magenta')
+    axs[1].set_title("Prąd i(t)")
 
-    plt.subplot(3, 1, 1)
-    plt.plot(t_values, u_vals, color='magenta')
-    plt.title('Napięcie wejściowe u(t) [V]')
-    plt.ylabel('Napięcie (V)')
-    plt.grid(True)
+    axs[2].clear()
+    axs[2].plot(t, omega_vals, color='magenta')
+    axs[2].set_title("Prędkość kątowa ω(t)")
+    axs[2].set_xlabel("Czas [s]")
 
-    plt.subplot(3, 1, 2)
-    plt.plot(t_values, i_vals, color='magenta')
-    plt.title('Prąd i(t) [A]')
-    plt.ylabel('Prąd (A)')
-    plt.grid(True)
+    for ax in axs:
+        ax.grid(True)
 
-    plt.subplot(3, 1, 3)
-    plt.plot(t_values, omega_vals, color='magenta')
-    plt.title('Prędkość kątowa ω(t) [rad/s]')
-    plt.xlabel('Czas (s)')
-    plt.ylabel('Prędkość (rad/s)')
-    plt.grid(True)
+    fig.canvas.draw_idle()
 
-    plt.tight_layout()
-    plt.show()
+fig, axs = plt.subplots(3, 1, figsize=(14, 18)) 
+plt.subplots_adjust(left=0.5, bottom=0.1, hspace=0.6)
 
-#GUI
-def start_simulation():
-    R = float(entry_R.get())
-    L = float(entry_L.get())
-    K_t = float(entry_Kt.get())
-    K_e = float(entry_Ke.get())
-    J = float(entry_J.get())
-    k = float(entry_k.get())
-    A = float(entry_A.get())
-    period = float(entry_period.get())
-    t_end = float(entry_t_end.get())
-    signal_type = signal_var.get()
-    simulate_and_plot(R, L, K_t, K_e, J, k, A, signal_type, period, t_end)
 
-root = tk.Tk()
-root.title("Symulacja silnika DC")
+mng = plt.get_current_fig_manager()
+mng.resize(*mng.window.maxsize())  
 
-fields = [
-    ("R [Ohm]", "2.0"),
-    ("L [H]", "0.5"),
-    ("K_t [Nm/A]", "0.1"),
-    ("K_e [Vs/rad]", "0.1"),
-    ("J [kg·m²]", "0.02"),
-    ("k [Nm/rad]", "0.1"),
-    ("Amplituda [V]", "10.0"),
-    ("Okres sygnału [s]", "2.0"),
-    ("Czas symulacji [s]", "5.0")
+
+text_defs = [
+    ('R', 1.0), ('L', 1.0), ('Kt', 1.0), ('Ke', 1.0),
+    ('J', 1.0), ('k', 100.0), ('A', 1.0), ('period', 1.0), ('time', 10.0)
 ]
 
-entries = []
-for i, (label, default) in enumerate(fields):
-    tk.Label(root, text=label).grid(row=i, column=0)
-    entry = tk.Entry(root)
-    entry.insert(0, default)
-    entry.grid(row=i, column=1)
-    entries.append(entry)
+textboxes = []
+for i, (label, val) in enumerate(text_defs):
+    ax = plt.axes([0.05, 0.92 - i * 0.05, 0.3, 0.03])
+    tb = TextBox(ax, f'{label}: ', initial=str(val))
+    tb.on_submit(update)
+    textboxes.append(tb)
 
-entry_R, entry_L, entry_Kt, entry_Ke, entry_J, entry_k, entry_A, entry_period, entry_t_end = entries
+radio_ax = plt.axes([0.05, 0.02, 0.3, 0.12], facecolor='pink')
+radio = RadioButtons(radio_ax, ('prostokat', 'trojkat', 'sinus'))
+radio.on_clicked(update)
 
-tk.Label(root, text="Typ sygnału").grid(row=len(fields), column=0)
-signal_var = tk.StringVar()
-signal_menu = ttk.Combobox(root, textvariable=signal_var)
-signal_menu['values'] = ['prostokat', 'trojkat', 'sinus']
-signal_menu.current(0)
-signal_menu.grid(row=len(fields), column=1)
-
-tk.Button(root, text="Symulacja", command=start_simulation).grid(row=len(fields)+1, column=0, columnspan=2, pady=10)
-
-root.mainloop()
+update(None)
+plt.show()
