@@ -13,7 +13,7 @@ def input_triangular(t, A, period):
 def input_sinus(t, A, period):
     return A * np.sin(2 * np.pi * t / period)
 
-def motor_dynamics(t, x, u, R, L, Ke, Kt, J, k):
+def motor_dynamics(x, u, R, L, Ke, Kt, J, k):
     i, theta, omega = x
     di_dt = (u - R * i - Ke * omega) / L
     dtheta_dt = omega
@@ -52,7 +52,7 @@ def update(_):
 
     for ti in t:
         u = input_func(ti, A, period)
-        dx = motor_dynamics(ti, x, u, R, L, Ke, Kt, J, k)
+        dx = motor_dynamics(x, u, R, L, Ke, Kt, J, k)
         x = [x[j] + dx[j] * dt for j in range(3)]
         i_vals.append(x[0])
         theta_vals.append(x[1])
