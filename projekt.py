@@ -77,20 +77,20 @@ def update(_):
 
     fig.canvas.draw_idle()
 
-fig, axs = plt.subplots(3, 1, figsize=(12, 14))  # Umiarkowany rozmiar, mieści się na ekranie
+fig, axs = plt.subplots(3, 1, figsize=(12, 14)) 
 plt.subplots_adjust(left=0.5, bottom=0.1, hspace=0.6)
 
 
 text_defs = [
-    ('R', 1.0), ('L', 0.01), ('Kt', 0.1), ('Ke', 0.1),
-    ('J', 0.01), ('k', 1.0), ('A', 10.0), ('Okres', 1.0), ('Czas trwania', 10.0)
+    ('R(Ω)', 1.0), ('L(H)', 0.01), ('Kt(Nm/A)', 0.1), ('Ke((V*s)/rad))', 0.1),
+    ('J(kg·m²)', 0.01), ('k(Nm/rad)', 1.0), ('A(V)', 10.0), ('T(s)', 1.0), ('Czas trwania(s)', 10.0)
 ]
 
 textboxes = []
 for i, (label, val) in enumerate(text_defs):
     ax = plt.axes([0.1, 0.92 - i * 0.05, 0.3, 0.04])
     tb = TextBox(ax, f'{label}: ', initial=str(val))
-    textboxes.append(tb)  # brak auto-submitu
+    textboxes.append(tb) 
 
 # przycisk Zatwierdz
 button_ax = plt.axes([0.2, 0.4, 0.1, 0.04])
