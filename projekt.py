@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import TextBox, RadioButtons
+from matplotlib.widgets import TextBox, RadioButtons, Button
 from scipy.signal import sawtooth
 
 
@@ -28,10 +28,10 @@ def parse_inputs():
 
 def update(_):
     vals = parse_inputs()
-    if vals is None or any(x == 0 for x in vals[:-1]):
+    if vals is None or any(x <= 0 for x in vals[:-1]):
         for ax in axs:
             ax.clear()
-            ax.text(0.5, 0.5, 'Błędne dane', ha='center', va='center', color='red', fontsize=12)
+            ax.text(0.5, 0.5, 'Błędne dane - zero w mianowniku', ha='center', va='center', color='red', fontsize=12)
             ax.set_xticks([])
             ax.set_yticks([])
         fig.canvas.draw_idle()
@@ -48,7 +48,7 @@ def update(_):
     dt = 0.001
     t = np.arange(0, t_end, dt)
     i_vals, theta_vals, omega_vals, u_vals = [], [], [], []
-    x = [0.0, 0.0, 0.0] # [i, theta, omega]
+    x = [0.0, 0.0, 0.0]
 
     for ti in t:
         u = input_func(ti, A, period)
@@ -77,27 +77,27 @@ def update(_):
 
     fig.canvas.draw_idle()
 
-fig, axs = plt.subplots(3, 1, figsize=(14, 18)) 
+fig, axs = plt.subplots(3, 1, figsize=(12, 14))  # Umiarkowany rozmiar, mieści się na ekranie
 plt.subplots_adjust(left=0.5, bottom=0.1, hspace=0.6)
 
 
-mng = plt.get_current_fig_manager()
-mng.resize(*mng.window.maxsize())  
-
-
 text_defs = [
-    ('R', 1.0), ('L', 1.0), ('Kt', 1.0), ('Ke', 1.0),
-    ('J', 1.0), ('k', 100.0), ('A', 1.0), ('period', 1.0), ('time', 10.0)
+    ('R', 1.0), ('L', 0.01), ('Kt', 0.1), ('Ke', 0.1),
+    ('J', 0.01), ('k', 1.0), ('A', 10.0), ('Okres', 1.0), ('Czas trwania', 10.0)
 ]
 
 textboxes = []
 for i, (label, val) in enumerate(text_defs):
-    ax = plt.axes([0.05, 0.92 - i * 0.05, 0.3, 0.03])
+    ax = plt.axes([0.1, 0.92 - i * 0.05, 0.3, 0.04])
     tb = TextBox(ax, f'{label}: ', initial=str(val))
-    tb.on_submit(update)
-    textboxes.append(tb)
+    textboxes.append(tb)  # brak auto-submitu
 
-radio_ax = plt.axes([0.05, 0.02, 0.3, 0.12], facecolor='pink')
+# przycisk Zatwierdz
+button_ax = plt.axes([0.2, 0.4, 0.1, 0.04])
+submit_button = Button(button_ax, 'Zatwierdź', color='lightgray', hovercolor='gray')
+submit_button.on_clicked(update)
+
+radio_ax = plt.axes([0.1, 0.02, 0.3, 0.12], facecolor='pink')
 radio = RadioButtons(radio_ax, ('prostokat', 'trojkat', 'sinus'))
 radio.on_clicked(update)
 
