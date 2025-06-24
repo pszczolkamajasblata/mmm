@@ -8,7 +8,7 @@ def input_rectangular(t, A, period):
     return A if (t % period) < (period / 2) else 0.0
 
 def input_triangular(t, A, period):
-    return A * (sawtooth(2 * np.pi * t / period, width=0.5) + 1) / 2
+    return A * (1 - abs((t % period) / (period / 2) - 1))
 
 def input_sinus(t, A, period):
     return A * np.sin(2 * np.pi * t / period)
@@ -28,7 +28,7 @@ def parse_inputs():
 
 def update(_):
     vals = parse_inputs()
-    if vals is None or any(x <= 0 for x in vals[:-1]):
+    if vals is None or vals[1] == 0 or vals[4] == 0: # sprawdzenie, czy L lub J są zerowe
         for ax in axs:
             ax.clear()
             ax.text(0.5, 0.5, 'Błędne dane - zero w mianowniku', ha='center', va='center', color='red', fontsize=12)
