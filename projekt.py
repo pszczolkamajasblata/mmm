@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import TextBox, RadioButtons, Button
-from scipy.signal import sawtooth
 
 
 def input_rectangular(t, A, period):
@@ -31,7 +30,7 @@ def update(_):
     if vals is None or vals[1] == 0 or vals[4] == 0: # sprawdzenie, czy L lub J są zerowe
         for ax in axs:
             ax.clear()
-            ax.text(0.5, 0.5, 'Błędne dane - zero w mianowniku', ha='center', va='center', color='red', fontsize=12)
+            ax.text(0.5, 0.5, 'Błędne dane', ha='center', va='center', color='red', fontsize=12)
             ax.set_xticks([])
             ax.set_yticks([])
         fig.canvas.draw_idle()
@@ -48,7 +47,7 @@ def update(_):
     dt = 0.001
     t = np.arange(0, t_end, dt)
     i_vals, theta_vals, omega_vals, u_vals = [], [], [], []
-    x = [0.0, 0.0, 0.0]
+    x = [0.0, 0.0, 0.0] # [i, theta, omega]
 
     for ti in t:
         u = input_func(ti, A, period)
