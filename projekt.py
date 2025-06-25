@@ -91,7 +91,6 @@ for i, (label, val) in enumerate(text_defs):
     tb = TextBox(ax, f'{label}: ', initial=str(val))
     textboxes.append(tb) 
 
-# przycisk Zatwierdz
 button_ax = plt.axes([0.2, 0.4, 0.1, 0.04])
 submit_button = Button(button_ax, 'Zatwierdź', color='lightgray', hovercolor='gray')
 submit_button.on_clicked(update)
